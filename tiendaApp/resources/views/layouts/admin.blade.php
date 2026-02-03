@@ -196,7 +196,7 @@
                         <i class="fa-solid fa-sliders text-xs"></i> Administración
                     </p>
                     <div class="space-y-1">
-                        <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 relative active">
+                        <a href="{{ route('usuarios.index') }}" class="nav-item flex items-center gap-3 px-3 py-2.5 relative {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
                             <i class="nav-icon fa-solid fa-users w-5 text-center"></i>
                             <span class="sidebar-text flex-1">Usuarios</span>
                         </a>
@@ -334,24 +334,41 @@
         
         // Cerrar sidebar al hacer clic en enlace (móvil)
         document.querySelectorAll('.nav-item').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
+            link.addEventListener('click', function() {
+                // NO usar e.preventDefault() - permite que el enlace funcione
                 
-                // Actualizar título
-                const pageTitle = this.querySelector('.sidebar-text').textContent;
-                document.querySelector('h2').textContent = pageTitle;
-                
-                // Marcar como activo
+                // Marcar como activo usando localStorage para persistencia
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.classList.remove('active');
                 });
                 this.classList.add('active');
+                
+                // Guardar el enlace activo en localStorage
+                localStorage.setItem('activeNavItem', this.href);
                 
                 // Cerrar sidebar en móvil
                 if (window.innerWidth < 1024) {
                     toggleSidebarMobile();
                 }
             });
+        });
+        
+        // Restaurar enlace activo al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.href;
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                if (item.href === currentPath) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Cerrar sidebar en móvil si está abierto al cargar página grande
+            if (window.innerWidth >= 1024) {
+                document.getElementById('sidebar').classList.remove('sidebar-mobile-visible');
+                document.getElementById('overlay').classList.remove('active');
+            }
         });
         
         // Ajustar al cambiar tamaño de ventana
